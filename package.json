@@ -42,7 +42,7 @@
     "rxjs": "^7.0.0"
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.3",
+    "@fortawesome/fontawesome-free": "^5.15.4",
     "@mdi/svg": "^5.9.55",
     "@primer/octicons": "^13.0.0",
     "@types/clipboard": "^2.0.1",
