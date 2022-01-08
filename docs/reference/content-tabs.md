@@ -1,43 +1,70 @@
 ---
 template: overrides/main.html
+icon: material/tab
 ---
 
 # Content tabs
 
 Sometimes, it's desirable to group alternative content under different tabs,
 e.g. when describing how to access an API from different languages or
-environments. Material for MkDocs allows for beautiful and functional tabs, grouping code blocks and other content.
+environments. Material for MkDocs allows for beautiful and functional tabs,
+grouping code blocks and other content.
 
 ## Configuration
 
-### Tabbed
-
-[:octicons-file-code-24: Source][1] · [:octicons-workflow-24: Extension][2]
-
-The [Tabbed][2] extension, which is part of [Python Markdown Extensions][3],
-integrates with Material for MkDocs and can be enabled via `mkdocs.yml`:
-
-``` yaml
-markdown_extensions:
-  - pymdownx.tabbed
-```
-
-  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/pymdownx/_tabbed.scss
-  [2]: https://facelessuser.github.io/pymdown-extensions/extensions/tabbed/
-  [3]: https://facelessuser.github.io/pymdown-extensions/
-
-### SuperFences
-
-The [SuperFences][4] extension, which is also part of [Python Markdown
-Extensions][3], allows for the __nesting of code and content blocks inside
-tabs__, and is therefore strongly recommended:
+This configuration enables content tabs, and allows to nest arbitrary content
+inside content tabs, including code blocks and ... more content tabs! Add the 
+following lines to `mkdocs.yml`:
 
 ``` yaml
 markdown_extensions:
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
 ```
 
-  [4]: https://facelessuser.github.io/pymdown-extensions/extensions/superfences/
+See additional configuration options:
+
+- [SuperFences]
+- [Tabbed]
+
+  [SuperFences]: ../setup/extensions/python-markdown-extensions.md#superfences
+  [Tabbed]: ../setup/extensions/python-markdown-extensions.md#tabbed
+
+### Linked content tabs
+
+[:octicons-heart-fill-24:{ .mdx-heart } Insiders][Insiders]{ .mdx-insiders } ·
+[:octicons-tag-24: insiders-2.9.0][Insiders] ·
+:octicons-unlock-24: Feature flag ·
+:octicons-beaker-24: Experimental
+
+When enabled, all content tabs across the whole documentation site will be
+linked and switch to the same label when the user clicks on a tab. Add the 
+following lines to `mkdocs.yml`:
+
+``` yaml
+theme:
+  features:
+    - content.tabs.link
+```
+
+Content tabs are linked based on their label, not offset. This means that all
+tabs with the same label will be activated when a user clicks a content tab
+regardless of order inside a container. Furthermore, this feature is fully
+integrated with [instant loading] and persisted across page loads.
+
+=== ":octicons-check-circle-fill-16: Enabled"
+
+    [![content.tabs.link enabled]][content.tabs.link enabled]
+
+=== ":octicons-skip-16: Disabled"
+
+    [![content.tabs.link disabled]][content.tabs.link disabled]
+
+  [Insiders]: ../insiders/index.md
+  [instant loading]: ../setup/setting-up-navigation.md#instant-loading
+  [content.tabs.link enabled]: ../assets/screenshots/content-tabs-link.png
+  [content.tabs.link disabled]: ../assets/screenshots/content-tabs.png
 
 ## Usage
 
@@ -135,9 +162,9 @@ _Result_:
 
 ### Embedded content
 
-When [SuperFences][5] is enabled, content tabs can contain arbitrary nested
+When [SuperFences] is enabled, content tabs can contain arbitrary nested
 content, including further content tabs, and can be nested in other blocks like
-[admonitions][6], [details][7] or blockquotes:
+[admonitions] or blockquotes:
 
 _Example_:
 
@@ -213,6 +240,4 @@ _Result_:
         2. Donec vitae suscipit est
         3. Nulla tempor lobortis orci
 
-  [5]: #superfences
-  [6]: admonitions.md
-  [7]: admonitions.md#details
+  [admonitions]: admonitions.md

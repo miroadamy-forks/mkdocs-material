@@ -20,14 +20,14 @@
  * IN THE SOFTWARE.
  */
 
-import { getElementOrThrow, getElements } from "~/browser"
+import { getElement, getElements } from "~/browser"
 
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * Component
+ * Component type
  */
 export type ComponentType =
   | "iconsearch"                       /* Icon search */
@@ -38,7 +38,7 @@ export type ComponentType =
   | "sponsorship-total"                /* Sponsorship total */
 
 /**
- * A component
+ * Component
  *
  * @template T - Component type
  * @template U - Reference type
@@ -84,7 +84,7 @@ interface ComponentTypeMap {
 export function getComponentElement<T extends ComponentType>(
   type: T, node: ParentNode = document
 ): ComponentTypeMap[T] {
-  return getElementOrThrow(`[data-mdx-component=${type}]`, node)
+  return getElement(`[data-mdx-component=${type}]`, node)
 }
 
 /**

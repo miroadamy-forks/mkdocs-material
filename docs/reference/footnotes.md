@@ -1,22 +1,19 @@
 ---
 template: overrides/main.html
+icon: material/format-align-bottom
 ---
 
 # Footnotes
 
-Footnotes are a great way to add references to supplemental or additional
-information for a specific section of a document without interrupting the
-document flow. Material for MkDocs provides the ability to insert inline
-footnotes and render them at the bottom of the page.
+Footnotes are a great way to add supplemental or additional information to a
+specific word, phrase or sentence without interrupting the flow of a document.
+Material for MkDocs provides the ability to define, reference and render
+footnotes.
 
 ## Configuration
 
-### Footnotes
-
-[:octicons-file-code-24: Source][1] · [:octicons-workflow-24: Extension][2]
-
-The [Footnotes][2] extension, which is part of the standard Markdown library,
-adds the ability to add inline footnotes to a document and can be enabled via
+This configuration adds the ability to define inline footnotes, which are then
+rendered below all Markdown content of a document. Add the following lines to
 `mkdocs.yml`:
 
 ``` yaml
@@ -24,8 +21,11 @@ markdown_extensions:
   - footnotes
 ```
 
-  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/assets/stylesheets/main/extensions/markdown/_footnotes.scss
-  [2]: https://python-markdown.github.io/extensions/footnotes/
+See additional configuration options:
+
+- [Footnotes]
+
+  [Footnotes]: ../setup/extensions/python-markdown.md#footnotes
 
 ## Usage
 
@@ -54,7 +54,7 @@ reference is automatically added.
 
 #### on a single line
 
-Short statements can be written on the same line.
+Short footnotes can be written on the same line.
 
 _Example_:
 
@@ -64,7 +64,7 @@ _Example_:
 
 _Result_:
 
-[Jump to footnote at the bottom of the page](#fn:1)
+[:octicons-arrow-down-24: Jump to footnote](#fn:1)
 
   [^1]: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
@@ -83,9 +83,9 @@ _Example_:
 
 _Result_:
 
-  [^2]:
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla et euismod
-      nulla. Curabitur feugiat, tortor non consequat finibus, justo purus
-      auctor massa, nec semper lorem quam in massa.
+[^2]:
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla et euismod
+    nulla. Curabitur feugiat, tortor non consequat finibus, justo purus
+    auctor massa, nec semper lorem quam in massa.
 
-[Jump to footnote at the bottom of the page](#fn:2)
+[:octicons-arrow-down-24: Jump to footnote](#fn:2)

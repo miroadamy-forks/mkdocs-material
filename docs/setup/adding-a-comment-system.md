@@ -4,82 +4,105 @@ template: overrides/main.html
 
 # Adding a comment system
 
-Material for MkDocs is natively integrated with [Disqus][1], a comment system
-that provides a wide range of features like social integrations, user profiles,
-as well as spam and moderation tools. Of course, other comment systems can be 
-integrated, too.
+Material for MkDocs allows to easily add the third-party comment system of your
+choice to the footer of every page by using [theme extension]. As an example,
+we'll be integrating [Disqus] a wildly popular comment provider, but others
+can be integrate with the same principles
 
-  [1]: https://disqus.com/
-
-## Configuration
-
-### Disqus
-
-[:octicons-file-code-24: Source][2] ·
-:octicons-milestone-24: Default: _none_
-
-First, ensure you've set [`site_url`][3] in `mkdocs.yml`. Then, to integrate
-Material for MkDocs with [Disqus][1], create an account and a site giving you a
-[shortname][4], and add it to `mkdocs.yml`:
-
-``` yaml
-extra:
-  disqus: <shortname>
-```
-
-This will insert a comment system on _every page, except the index page_.
-
-  [2]: https://github.com/squidfunk/mkdocs-material/blob/master/src/partials/integrations/disqus.html
-  [3]: https://www.mkdocs.org/user-guide/configuration/#site_url
-  [4]: https://help.disqus.com/en/articles/1717111-what-s-a-shortname
+  [Disqus]: https://disqus.com/
 
 ## Customization
 
-### Selective integration
+### Disqus integration
 
-[:octicons-file-code-24: Source][2] ·
-:octicons-note-24: Metadata ·
-:octicons-mortar-board-24: Difficulty: _easy_
+In order to integrate a third-party comment provider offering a JavaScript-based
+solution, follow the guide on [theme extension], copy the contents from the
+[`content.html`][content partial] partial and create a file at the same location
+in the `overrides` folder:
 
-If the [Metadata][5] extension is enabled, you can disable or enable Disqus for
-specific pages by adding the following to the front matter of a page:
+=== ":octicons-file-code-16: overrides/partials/content.html"
 
-=== "Enable Disqus"
+    ``` html
+    <!-- Add copied contents from original content.html here -->
+
+    <!-- Get setting from mkdocs.yml, but allow page-level overrides -->
+    {% set disqus = config.extra.disqus %}
+    {% if page and page.meta and page.meta.disqus is string %}
+      {% set disqus = page.meta.disqus %}
+    {% endif %}
+
+    <!-- Inject Disqus into current page -->
+    {% if not page.is_homepage and disqus %}
+      <h2 id="__comments">{{ lang.t("meta.comments") }}</h2>
+      <div id="disqus_thread"></div>
+      <script>
+        var disqus_config = function() {
+          this.page.url = "{{ page.canonical_url }}"
+          this.page.identifier =
+            "{{ page.canonical_url | replace(config.site_url, '') }}" // (1)!
+        }
+
+        /* Set up for the first time */
+        if (typeof DISQUS === "undefined") {
+          var script = document.createElement("script")
+          script.async = true
+          script.src = "https://{{ disqus }}.disqus.com/embed.js"
+          script.setAttribute("data-timestamp", Date.now())
+
+          /* Inject script tag */
+          document.body.appendChild(script)
+
+        /* Set up on navigation (instant loading) */
+        } else {
+          DISQUS.reset({
+            reload: true,
+            config: disqus_config
+          })
+        }
+      </script>
+    {% endif %}
+    ```
+
+    1.  Ensure you've set [`site_url`][site_url] in `mkdocs.yml`.
+
+=== ":octicons-file-code-16: mkdocs.yml"
 
     ``` yaml
+    extra:
+      disqus: <shortname> # (1)!
+    ```
+
+    1.  Add your Disqus [shortname] here.
+
+  [theme extension]: ../customization.md#extending-the-theme
+  [content partial]: https://github.com/squidfunk/mkdocs-material/blob/master/src/partials/content.html
+  [shortname]: https://help.disqus.com/en/articles/1717111-what-s-a-shortname
+
+#### on a single page
+
+When [Metadata] is enabled, Disqus can be enabled or disabled for a single page
+with custom front matter. Add the following lines at the top of a Markdown file:
+
+=== ":octicons-check-circle-fill-16: Enabled"
+
+    ``` bash
     ---
     disqus: <shortname>
     ---
 
+    # Document title
     ...
     ```
 
-=== "Disable Disqus"
+=== ":octicons-skip-16: Disabled"
 
-    ``` yaml
+    ``` bash
     ---
     disqus: ""
     ---
 
+    # Document title
     ...
     ```
 
-  [5]: ../../reference/meta-tags/#metadata
-
-### Other comment systems
-
-[:octicons-file-code-24: Source][6] ·
-:octicons-mortar-board-24: Difficulty: _easy_
-
-In order to integrate another JavaScript-based comment system provider, you can
-[extend the theme][7] and [override the `disqus` block][8]:
-
-``` html
-{% block disqus %}
-  <!-- Add custom comment system integration here -->
-{% endblock %}
-```
-
-  [6]: https://github.com/squidfunk/mkdocs-material/blob/master/src/base.html
-  [7]: ../customization.md#extending-the-theme
-  [8]: ../customization.md#overriding-blocks-recommended
+  [Metadata]: extensions/python-markdown.md#metadata

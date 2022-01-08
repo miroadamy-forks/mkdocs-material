@@ -28,16 +28,14 @@ import {
   from,
   fromEvent,
   identity,
-  defer,
-  of
-} from "rxjs"
-import {
   catchError,
+  defer,
   mapTo,
   mergeWith,
+  of,
   switchMap,
   tap
-} from "rxjs/operators"
+} from "rxjs"
 import glob from "tiny-glob"
 
 /* ----------------------------------------------------------------------------
@@ -128,7 +126,10 @@ export function resolve(
 export function watch(
   pattern: string, options: WatchOptions
 ): Observable<string> {
-  return fromEvent(chokidar.watch(pattern, options), "change")
+  return fromEvent(
+    chokidar.watch(pattern, options),
+    "change"
+  ) as Observable<string>
 }
 
 /* ------------------------------------------------------------------------- */

@@ -34,9 +34,6 @@
     src="https://img.shields.io/docker/pulls/squidfunk/mkdocs-material" 
     alt="Docker Pulls"
   /></a>
-  <a href="https://squidfunk.github.io/mkdocs-material/insiders/"><img
-    src="https://img.shields.io/static/v1?label=%E2%86%92&message=insiders&color=e91e63"
-  /></a>
 </p>
 
 <p align="center">
@@ -53,12 +50,41 @@
 
 <p align="center">
   <em>
-    A demo is worth a thousand words — check it out at
+    Check out the demo – 
     <a
       href="https://squidfunk.github.io/mkdocs-material/"
     >squidfunk.github.io/mkdocs-material</a>.
   </em>
 </p>
+
+<h2></h2>
+<p>&nbsp;</p>
+<p id="premium-sponsors" align="center"><strong>Special thanks</strong> to our <strong>premium sponsors</strong>:</p>
+<p>&nbsp;</p>
+<p align="center">
+  <a href="https://cirrus-ci.org/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-cirrus-ci.png" height="65"
+  /></a>
+  <a href="https://docs.baslerweb.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-basler.png" height="65"
+  /></a>
+  <a href="https://hummingbot.io/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-hummingbot.png" height="65"
+  /></a>
+  <a href="https://kx.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-kx.png" height="65"
+  /></a>
+  <a href="https://www.manticoregames.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-manticore-games.png" height="65"
+  /></a>
+  <a href="https://www.accounttechnologies.com/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-account-technologies.png" height="65"
+  /></a>
+  <a href="https://orion-docs.prefect.io/" target=_blank><img
+    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/sponsor-prefect.png" height="65"
+  /></a>
+</p>
+<p>&nbsp;</p>
 
 ## Features
 
@@ -68,7 +94,7 @@
 
 * **... but there's more** — integrates natively with Python Markdown
   Extensions, adding callouts, tabbed content containers, mathematical formulas,
-  critic markup, task lists, and [more than 10k icons and emojis][2].
+  critic markup, task lists, and [more than 10k icons and emojis][icons-emojis].
 
 * **Responsive by design** — built from the ground up to work on all kinds of
   devices – from mobile phones to widescreens. The underlying fluid layout will
@@ -94,15 +120,17 @@
   on top of TypeScript, RxJS, and SCSS, bringing excellent possibilities for
   theme extension and customization.
 
-_Material for MkDocs uses the [sponsorware][3] release strategy, which means
-that new features are first exclusively released to sponsors as part of Material
-for MkDocs Insiders. Read on to learn [how sponsorship works][4], and how you
-can [become a sponsor][5]._
+Material for MkDocs follows the __sponsorware__ release strategy, which means
+that new features are first exclusively released to sponsors as part of
+[Insiders]. Read on to learn [what sponsorships achieve],
+[how to become a sponsor] to get access to Insiders, and
+[what's in for you][available features]!
 
-  [2]: https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/#search
-  [3]: https://github.com/sponsorware/docs
-  [4]: https://squidfunk.github.io/mkdocs-material/insiders/#how-sponsorship-works
-  [5]: https://squidfunk.github.io/mkdocs-material/insiders/#how-to-become-a-sponsor
+  [icons-emojis]: https://squidfunk.github.io/mkdocs-material/reference/icons-emojis/
+  [Insiders]: https://squidfunk.github.io/mkdocs-material/insiders/#what-is-insiders
+  [what sponsorships achieve]: https://squidfunk.github.io/mkdocs-material/insiders/#what-sponsorships-achieve
+  [how to become a sponsor]: https://squidfunk.github.io/mkdocs-material/insiders/#how-to-become-a-sponsor
+  [available features]: https://squidfunk.github.io/mkdocs-material/insiders/#available-features
 
 ## Quick start
 
@@ -120,32 +148,26 @@ theme:
 ```
 
 For other installation methods, configuration options, and a demo, visit
-[squidfunk.github.io/mkdocs-material][1]
+[squidfunk.github.io/mkdocs-material][Material for MkDocs]
 
-  [1]: https://squidfunk.github.io/mkdocs-material/
-
-## Premium Sponsors
-
-<p>
-  <a href="https://docs.baslerweb.com/" target=_blank><img
-    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/basler.png" width="155"
-  /></a>
-  <a href="https://cirrus-ci.org/" target=_blank><img
-    src="https://raw.githubusercontent.com/squidfunk/mkdocs-material/master/.github/assets/sponsors/cirrus-ci.svg" width="155"
-  /></a>
-</p>
+  [Material for MkDocs]: https://squidfunk.github.io/mkdocs-material/
 
 ## Trusted by ...
 
-### ... leading companies
+### ... leading organizations
 
+[Atlassian](https://atlassian.github.io/data-center-helm-charts/),
 [AWS](https://aws.github.io/copilot-cli/),
 [Binance](https://docs.binance.org/),
+[Bloomberg](https://bloomberg.github.io/selekt/),
+[CERN](http://abpcomputing.web.cern.ch/),
 [Datadog](https://datadoghq.dev/integrations-core/),
-[Google](https://google.github.io/xls/),
+[Google](https://google.github.io/accompanist/),
 [ING](https://ing-bank.github.io/baker/),
+[Intel](https://open-amt-cloud-toolkit.github.io/docs/),
 [LinkedIn](https://linkedin.github.io/school-of-sre/),
 [Microsoft](https://microsoft.github.io/code-with-engineering-playbook/),
+[Mozilla](https://mozillafoundation.github.io/engineering-handbook/),
 [Netflix](https://netflix.github.io/titus/),
 [Salesforce](https://policy-sentry.readthedocs.io/en/latest/),
 [SoundCloud](https://intervene.dev/),
@@ -154,17 +176,21 @@ For other installation methods, configuration options, and a demo, visit
 
 ### ... and successful Open Source projects
 
+[Arduino](https://arduino.github.io/arduino-cli/),
 [AutoKeras](https://autokeras.com/),
 [BFE](https://www.bfe-networks.net/),
+[CentOS](https://docs.infra.centos.org/),
 [Crystal](https://crystal-lang.org/reference/),
+[Electron](https://www.electron.build/),
 [FastAPI](https://fastapi.tiangolo.com/),
+[Knative](https://knative.dev/docs/),
 [Kubernetes](https://kops.sigs.k8s.io/),
 [kSQL](https://docs.ksqldb.io/),
 [Nokogiri](https://nokogiri.org/),
 [OpenFaaS](https://docs.openfaas.com/),
 [Pi-Hole](https://docs.pi-hole.net/),
 [Pydantic](https://pydantic-docs.helpmanual.io/),
-[Renovatebot](https://docs.renovatebot.com/),
+[Renovate](https://docs.renovatebot.com/),
 [Traefik](https://docs.traefik.io/),
 [Vapor](https://docs.vapor.codes/),
 [ZeroNet](https://zeronet.io/docs/),

@@ -20,28 +20,50 @@
  * IN THE SOFTWARE.
  */
 
-import { NEVER, Observable, ObservableInput, merge } from "rxjs"
-import { filter, sample, take } from "rxjs/operators"
+import {
+  NEVER,
+  Observable,
+  ObservableInput,
+  filter,
+  merge,
+  mergeWith,
+  sample,
+  take
+} from "rxjs"
 
 import { configuration } from "~/_"
 import {
   Keyboard,
   getActiveElement,
   getElements,
-  setElementFocus,
-  setElementSelection,
   setToggle
 } from "~/browser"
 import {
   SearchIndex,
+  SearchResult,
   isSearchQueryMessage,
   isSearchReadyMessage,
   setupSearchWorker
 } from "~/integrations"
 
-import { Component, getComponentElement } from "../../_"
-import { SearchQuery, mountSearchQuery } from "../query"
-import { SearchResult, mountSearchResult } from "../result"
+import {
+  Component,
+  getComponentElement,
+  getComponentElements
+} from "../../_"
+import {
+  SearchQuery,
+  mountSearchQuery
+} from "../query"
+import { mountSearchResult } from "../result"
+import {
+  SearchShare,
+  mountSearchShare
+} from "../share"
+import {
+  SearchSuggest,
+  mountSearchSuggest
+} from "../suggest"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -53,6 +75,8 @@ import { SearchResult, mountSearchResult } from "../result"
 export type Search =
   | SearchQuery
   | SearchResult
+  | SearchShare
+  | SearchSuggest
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -85,96 +109,134 @@ export function mountSearch(
   el: HTMLElement, { index$, keyboard$ }: MountOptions
 ): Observable<Component<Search>> {
   const config = configuration()
-  const worker = setupSearchWorker(config.search, index$)
+  try {
+    const url = __search?.worker || config.search
+    const worker = setupSearchWorker(url, index$)
 
-  /* Retrieve nested components */
-  const query  = getComponentElement("search-query", el)
-  const result = getComponentElement("search-result", el)
+    /* Retrieve query and result components */
+    const query  = getComponentElement("search-query", el)
+    const result = getComponentElement("search-result", el)
 
-  /* Re-emit query when search is ready */
-  const { tx$, rx$ } = worker
-  tx$
-    .pipe(
-      filter(isSearchQueryMessage),
-      sample(rx$.pipe(filter(isSearchReadyMessage))),
-      take(1)
-    )
-      .subscribe(tx$.next.bind(tx$))
+    /* Re-emit query when search is ready */
+    const { tx$, rx$ } = worker
+    tx$
+      .pipe(
+        filter(isSearchQueryMessage),
+        sample(rx$.pipe(filter(isSearchReadyMessage))),
+        take(1)
+      )
+        .subscribe(tx$.next.bind(tx$))
 
-  /* Set up search keyboard handlers */
-  keyboard$
-    .pipe(
-      filter(({ mode }) => mode === "search")
-    )
-      .subscribe(key => {
-        const active = getActiveElement()
-        switch (key.type) {
+    /* Set up search keyboard handlers */
+    keyboard$
+      .pipe(
+        filter(({ mode }) => mode === "search")
+      )
+        .subscribe(key => {
+          const active = getActiveElement()
+          switch (key.type) {
 
-          /* Enter: prevent form submission */
-          case "Enter":
-            if (active === query)
+            /* Enter: go to first (best) result */
+            case "Enter":
+              if (active === query) {
+                const anchors = new Map<HTMLAnchorElement, number>()
+                for (const anchor of getElements<HTMLAnchorElement>(
+                  ":first-child [href]", result
+                )) {
+                  const article = anchor.firstElementChild!
+                  anchors.set(anchor, parseFloat(
+                    article.getAttribute("data-md-score")!
+                  ))
+                }
+
+                /* Go to result with highest score, if any */
+                if (anchors.size) {
+                  const [[best]] = [...anchors].sort(([, a], [, b]) => b - a)
+                  best.click()
+                }
+
+                /* Otherwise omit form submission */
+                key.claim()
+              }
+              break
+
+            /* Escape or Tab: close search */
+            case "Escape":
+            case "Tab":
+              setToggle("search", false)
+              query.blur()
+              break
+
+            /* Vertical arrows: select previous or next search result */
+            case "ArrowUp":
+            case "ArrowDown":
+              if (typeof active === "undefined") {
+                query.focus()
+              } else {
+                const els = [query, ...getElements(
+                  ":not(details) > [href], summary, details[open] [href]",
+                  result
+                )]
+                const i = Math.max(0, (
+                  Math.max(0, els.indexOf(active)) + els.length + (
+                    key.type === "ArrowUp" ? -1 : +1
+                  )
+                ) % els.length)
+                els[i].focus()
+              }
+
+              /* Prevent scrolling of page */
               key.claim()
-            break
+              break
 
-          /* Escape or Tab: close search */
-          case "Escape":
-          case "Tab":
-            setToggle("search", false)
-            setElementFocus(query, false)
-            break
+            /* All other keys: hand to search query */
+            default:
+              if (query !== getActiveElement())
+                query.focus()
+          }
+        })
 
-          /* Vertical arrows: select previous or next search result */
-          case "ArrowUp":
-          case "ArrowDown":
-            if (typeof active === "undefined") {
-              setElementFocus(query)
-            } else {
-              const els = [query, ...getElements(
-                ":not(details) > [href], summary, details[open] [href]",
-                result
-              )]
-              const i = Math.max(0, (
-                Math.max(0, els.indexOf(active)) + els.length + (
-                  key.type === "ArrowUp" ? -1 : +1
-                )
-              ) % els.length)
-              setElementFocus(els[i])
-            }
+    /* Set up global keyboard handlers */
+    keyboard$
+      .pipe(
+        filter(({ mode }) => mode === "global"),
+      )
+        .subscribe(key => {
+          switch (key.type) {
 
-            /* Prevent scrolling of page */
-            key.claim()
-            break
+            /* Open search and select query */
+            case "f":
+            case "s":
+            case "/":
+              query.focus()
+              query.select()
 
-          /* All other keys: hand to search query */
-          default:
-            if (query !== getActiveElement())
-              setElementFocus(query)
-        }
-      })
+              /* Prevent scrolling of page */
+              key.claim()
+              break
+          }
+        })
 
-  /* Set up global keyboard handlers */
-  keyboard$
-    .pipe(
-      filter(({ mode }) => mode === "global"),
-    )
-      .subscribe(key => {
-        switch (key.type) {
+    /* Create and return component */
+    const query$  = mountSearchQuery(query, worker)
+    const result$ = mountSearchResult(result, worker, { query$ })
+    return merge(query$, result$)
+      .pipe(
+        mergeWith(
 
-          /* Open search and select query */
-          case "f":
-          case "s":
-          case "/":
-            setElementFocus(query)
-            setElementSelection(query)
-            key.claim()
-            break
-        }
-      })
+          /* Search sharing */
+          ...getComponentElements("search-share", el)
+            .map(child => mountSearchShare(child, { query$ })),
 
-  /* Create and return component */
-  const query$ = mountSearchQuery(query, worker)
-  return merge(
-    query$,
-    mountSearchResult(result, worker, { query$ })
-  )
+          /* Search suggestions */
+          ...getComponentElements("search-suggest", el)
+            .map(child => mountSearchSuggest(child, worker, { keyboard$ }))
+        )
+      )
+
+  /* Gracefully handle broken search */
+  } catch (err) {
+    el.hidden = true
+    return NEVER
+  }
 }

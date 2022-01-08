@@ -91,8 +91,23 @@ async function setupSearchLanguages(
   /* Add scripts for languages */
   const scripts = []
   for (const lang of config.lang) {
-    if (lang === "ja") scripts.push(`${base}/tinyseg.js`)
-    if (lang !== "en") scripts.push(`${base}/min/lunr.${lang}.min.js`)
+    switch (lang) {
+
+      /* Add segmenter for Japanese */
+      case "ja":
+        scripts.push(`${base}/tinyseg.js`)
+        break
+
+      /* Add segmenter for Hindi and Thai */
+      case "hi":
+      case "th":
+        scripts.push(`${base}/wordcut.js`)
+        break
+    }
+
+    /* Add language support */
+    if (lang !== "en")
+      scripts.push(`${base}/min/lunr.${lang}.min.js`)
   }
 
   /* Add multi-language support */
@@ -135,7 +150,7 @@ export async function handler(
     case SearchMessageType.QUERY:
       return {
         type: SearchMessageType.RESULT,
-        data: index ? index.search(message.data) : []
+        data: index ? index.search(message.data) : { items: [] }
       }
 
     /* All other messages */
@@ -148,7 +163,7 @@ export async function handler(
  * Worker
  * ------------------------------------------------------------------------- */
 
-/* @ts-ignore - expose Lunr.js in global scope, or stemmers will not work */
+/* @ts-expect-error - expose Lunr.js in global scope, or stemmers won't work */
 self.lunr = lunr
 
 /* Handle messages */

@@ -5,46 +5,84 @@ title: Getting started
 
 # Getting started
 
-Material for MkDocs is a theme for [MkDocs][1], a static site generator geared
+Material for MkDocs is a theme for [MkDocs], a static site generator geared
 towards (technical) project documentation. If you're familiar with Python, you
-can install Material for MkDocs with [`pip`][2], the Python package manager.
-If not, we recommended using [`docker`][3].
+can install Material for MkDocs with [`pip`][pip], the Python package manager.
+If not, we recommended using [`docker`][docker].
 
-In case you're running into problems, consult the [troubleshooting][4] section.
-
-  [1]: https://www.mkdocs.org
-  [2]: #with-pip-recommended
-  [3]: #with-docker
-  [4]: troubleshooting.md
+  [MkDocs]: https://www.mkdocs.org
+  [pip]: #with-pip
+  [docker]: #with-docker
 
 ## Installation
 
-### with pip <small>recommended</small> { data-toc-label="with pip" }
+### with pip <small>recommended</small> { #with-pip data-toc-label="with pip" }
 
 Material for MkDocs can be installed with `pip`:
 
-```
-pip install mkdocs-material
-```
+=== "Latest"
+
+    ``` sh
+    pip install mkdocs-material
+    ```
+
+=== "8.x <small>version range</small>"
+
+    ``` sh
+    pip install mkdocs-material=="8.*" #(1)!
+    ```
+
+    1.  Material for MkDocs uses [semantic versioning][^1], which is why it's a
+        good idea to limit upgrades to the current major version.
+
+        This will make sure that you don't accidentally [upgrade to the next
+        major version], which may include breaking changes that silently break
+        your site. Additionally, you can use `pip freeze` to create a lockfile,
+        so builds are reproducible at all times:
+
+        ```
+        pip freeze > requirements.txt
+        ```
+
+        Now, the lockfile can be used for installation:
+
+        ```
+        pip install -r requirements.txt
+        ```
+
+  [^1]:
+    Note that improvements of existing features are sometimes released as
+    patch releases, like for example improved rendering of content tabs, as
+    they're not considered to be new features.
 
 This will automatically install compatible versions of all dependencies:
-[MkDocs][1], [Markdown][5], [Pygments][6] and [Python Markdown Extensions][7].
-Material for MkDocs always strives to support the latest versions, so there's
-no need to install those packages separately.
+[MkDocs], [Markdown], [Pygments] and [Python Markdown Extensions]. Material for
+MkDocs always strives to support the latest versions, so there's no need to
+install those packages separately.
 
-  [5]: https://python-markdown.github.io/
-  [6]: https://pygments.org/
-  [7]: https://facelessuser.github.io/pymdown-extensions/
+  [semantic versioning]: https://semver.org/
+  [upgrade to the next major version]: upgrade.md
+  [Markdown]: https://python-markdown.github.io/
+  [Pygments]: https://pygments.org/
+  [Python Markdown Extensions]: https://facelessuser.github.io/pymdown-extensions/
 
 ### with docker
 
-The official [Docker image][8] is a great way to get up and running in a few
+The official [Docker image] is a great way to get up and running in a few
 minutes, as it comes with all dependencies pre-installed. Pull the image for the 
 `latest` version with:
 
-```
-docker pull squidfunk/mkdocs-material
-```
+=== "Latest"
+
+    ```
+    docker pull squidfunk/mkdocs-material
+    ```
+
+=== "8.x <small>version range</small>"
+
+    ```
+    docker pull squidfunk/mkdocs-material:8
+    ```
 
 The `mkdocs` executable is provided as an entry point and `serve` is the 
 default command. If you're not familiar with Docker don't worry, we have you
@@ -52,19 +90,18 @@ covered in the following sections.
 
 The following plugins are bundled with the Docker image:
 
-- [mkdocs-minify-plugin][9]
-- [mkdocs-redirects][10]
+- [mkdocs-minify-plugin]
+- [mkdocs-redirects]
 
-  [8]: https://hub.docker.com/r/squidfunk/mkdocs-material/
-  [9]: https://github.com/byrnereese/mkdocs-minify-plugin
-  [10]: https://github.com/datarobot/mkdocs-redirects
+  [Docker image]: https://hub.docker.com/r/squidfunk/mkdocs-material/
+  [mkdocs-minify-plugin]: https://github.com/byrnereese/mkdocs-minify-plugin
+  [mkdocs-redirects]: https://github.com/datarobot/mkdocs-redirects
 
 ??? question "How to add plugins to the Docker image?"
 
-    Material for MkDocs bundles useful and common plugins while trying not to
-    blow up the size of the official image. If the plugin you want to use is
-    not included, create a new `Dockerfile` and extend the official Docker image
-    with your custom installation routine:
+    Material for MkDocs only bundles selected plugins in order to keep the size
+    of the official image small. If the plugin you want to use is not included, 
+    create a new `Dockerfile` and extend the official Docker image:
 
     ``` Dockerfile
     FROM squidfunk/mkdocs-material
@@ -79,9 +116,22 @@ The following plugins are bundled with the Docker image:
 
     The new image can be used exactly like the official image.
 
+!!! info ":material-apple: Apple Silicon (M1) and :fontawesome-brands-raspberry-pi: Raspberry Pi"
+
+    The official Docker image is only available for `linux/amd64`. We recommend
+    the [third-party image] by @afritzler if you want to run Material for MkDocs
+    via Docker on `arm64` or `armv7`, as it is automatically built on every
+    release:
+
+    ```
+    docker pull ghcr.io/afritzler/mkdocs-material
+    ```
+
+  [third-party image]: https://github.com/afritzler/mkdocs-material
+
 ### with git
 
-Material for MkDocs can be directly used from [GitHub][11] by cloning the
+Material for MkDocs can be directly used from [GitHub] by cloning the
 repository into a subfolder of your project root which might be useful if you
 want to use the very latest version:
 
@@ -93,7 +143,7 @@ The theme will reside in the folder `mkdocs-material/material`. When cloning
 from `git`, you must install all required dependencies yourself:
 
 ```
-pip install -r mkdocs-material/requirements.txt
+pip install -e mkdocs-material
 ```
 
-  [11]: https://github.com/squidfunk/mkdocs-material
+  [GitHub]: https://github.com/squidfunk/mkdocs-material

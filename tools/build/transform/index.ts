@@ -25,21 +25,18 @@ import { build as esbuild } from "esbuild"
 import * as path from "path"
 import postcss from "postcss"
 import {
-  NEVER,
+  EMPTY,
   Observable,
+  catchError,
   concat,
   defer,
-  merge,
-  of
-} from "rxjs"
-import {
-  catchError,
   endWith,
   ignoreElements,
+  merge,
+  of,
   switchMap
-} from "rxjs/operators"
-import { render as sass } from "sass"
-import { promisify } from "util"
+} from "rxjs"
+import { compile } from "sass"
 
 import { base, mkdir, write } from "../_"
 
@@ -99,21 +96,20 @@ function digest(file: string, data: string): string {
 export function transformStyle(
   options: TransformOptions
 ): Observable<string> {
-  return defer(() => promisify(sass)({
-    file: options.from,
-    outFile: options.to,
-    includePaths: [
+  return defer(() => of(compile(options.from, {
+    loadPaths: [
       "src/assets/stylesheets",
       "node_modules/modularscale-sass/stylesheets",
       "node_modules/material-design-color",
       "node_modules/material-shadows"
     ],
-    sourceMap: true,
-    sourceMapContents: true
-  }))
+    sourceMap: true
+  })))
     .pipe(
-      switchMap(({ css, map }) => postcss([
+      switchMap(({ css, sourceMap }) => postcss([
         require("autoprefixer"),
+        require("postcss-logical"),
+        require("postcss-dir-pseudo-class"),
         require("postcss-inline-svg")({
           paths: [
             `${base}/.icons`
@@ -126,15 +122,16 @@ export function transformStyle(
       ])
         .process(css, {
           from: options.from,
+          to: options.to,
           map: {
-            prev: `${map}`,
+            prev: sourceMap,
             inline: false
           }
         })
       ),
       catchError(err => {
         console.log(err.formatted || err.message)
-        return NEVER
+        return EMPTY
       }),
       switchMap(({ css, map }) => {
         const file = digest(options.to, css)
@@ -172,6 +169,8 @@ export function transformScript(
     write: false,
     bundle: true,
     sourcemap: true,
+    sourceRoot: "../../../..",
+    legalComments: "inline",
     minify: process.argv.includes("--optimize")
   }))
     .pipe(
@@ -183,6 +182,7 @@ export function transformScript(
           map: Buffer.from(data, "base64")
         })
       }),
+      catchError(() => EMPTY),
       switchMap(({ js, map }) => {
         const file = digest(options.to, js)
         return concat(

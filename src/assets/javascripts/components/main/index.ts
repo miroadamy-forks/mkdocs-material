@@ -22,16 +22,17 @@
 
 import {
   Observable,
-  combineLatest
-} from "rxjs"
-import {
+  combineLatest,
   distinctUntilChanged,
   distinctUntilKeyChanged,
   map,
   switchMap
-} from "rxjs/operators"
+} from "rxjs"
 
-import { Viewport, watchElementSize } from "~/browser"
+import {
+  Viewport,
+  watchElementSize
+} from "~/browser"
 
 import { Header } from "../header"
 
@@ -45,7 +46,7 @@ import { Header } from "../header"
 export interface Main {
   offset: number                       /* Main area top offset */
   height: number                       /* Main area visible height */
-  active: boolean                      /* User scrolled past header */
+  active: boolean                      /* Main area is active */
 }
 
 /* ----------------------------------------------------------------------------

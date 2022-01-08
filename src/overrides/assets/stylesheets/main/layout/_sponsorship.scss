@@ -27,21 +27,55 @@
 // Scoped in typesetted content to match specificity of regular content
 .md-typeset {
 
+  // Premium sponsors
+  .mdx-premium {
+
+    // Paragraphs
+    p {
+      margin: 2em 0;
+      text-align: center;
+    }
+
+    // Premium sponsor image
+    img {
+      height: px2rem(65px);
+    }
+
+    // Premium sponsor list
+    p:last-child {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+
+      // Premium sponsor link
+      > a {
+        display: block;
+        flex-shrink: 0;
+      }
+    }
+  }
+
   // Sponsorship
   .mdx-sponsorship {
 
     // Sponsorship list
     &__list {
       margin: 2em 0;
-      overflow: auto;
+
+      // Clearfix, because we can't use overflow: auto
+      &::after {
+        display: block;
+        clear: both;
+        content: "";
+      }
     }
 
     // Sponsorship item
     &__item {
       display: block;
       float: left;
-      width: px2rem(60px);
-      height: px2rem(60px);
+      width: px2rem(32px);
+      height: px2rem(32px);
       margin: px2rem(4px);
       overflow: hidden;
       border-radius: 100%;
@@ -65,8 +99,8 @@
       &--private {
         color: var(--md-default-fg-color--lighter);
         font-weight: 700;
-        font-size: px2rem(24px);
-        line-height: px2rem(60px);
+        font-size: px2rem(12px);
+        line-height: px2rem(32px);
         text-align: center;
         background: var(--md-default-fg-color--lightest);
       }
@@ -76,7 +110,7 @@
         display: block;
         width: 100%;
         height: auto;
-        filter: grayscale(100%);
+        filter: grayscale(100%) opacity(75%);
         transition: filter 125ms;
       }
     }

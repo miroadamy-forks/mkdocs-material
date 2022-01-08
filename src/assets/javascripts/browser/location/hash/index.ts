@@ -20,10 +20,17 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, fromEvent, of } from "rxjs"
-import { filter, map, share, startWith, switchMap } from "rxjs/operators"
+import {
+  Observable,
+  filter,
+  fromEvent,
+  map,
+  shareReplay,
+  startWith
+} from "rxjs"
 
-import { createElement, getElement } from "~/browser"
+import { getOptionalElement } from "~/browser"
+import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -49,8 +56,7 @@ export function getLocationHash(): string {
  * @param hash - Location hash
  */
 export function setLocationHash(hash: string): void {
-  const el = createElement("a")
-  el.href = hash
+  const el = h("a", { href: hash })
   el.addEventListener("click", ev => ev.stopPropagation())
   el.click()
 }
@@ -68,7 +74,7 @@ export function watchLocationHash(): Observable<string> {
       map(getLocationHash),
       startWith(getLocationHash()),
       filter(hash => hash.length > 0),
-      share()
+      shareReplay(1)
     )
 }
 
@@ -80,6 +86,7 @@ export function watchLocationHash(): Observable<string> {
 export function watchLocationTarget(): Observable<HTMLElement> {
   return watchLocationHash()
     .pipe(
-      switchMap(id => of(getElement(`[id="${id}"]`)!))
+      map(id => getOptionalElement(`[id="${id}"]`)!),
+      filter(el => typeof el !== "undefined")
     )
 }

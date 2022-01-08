@@ -22,20 +22,18 @@
 
 import {
   Observable,
-  animationFrameScheduler,
   combineLatest,
-  of
-} from "rxjs"
-import {
   delay,
   map,
-  observeOn,
+  of,
   switchMap,
   withLatestFrom
-} from "rxjs/operators"
+} from "rxjs"
 
-import { resetScrollLock, setScrollLock } from "~/actions"
-import { Viewport, watchToggle } from "~/browser"
+import {
+  Viewport,
+  watchToggle
+} from "~/browser"
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -46,7 +44,7 @@ import { Viewport, watchToggle } from "~/browser"
  */
 interface PatchOptions {
   viewport$: Observable<Viewport>      /* Viewport observable */
-  tablet$: Observable<boolean>         /* Tablet breakpoint observable */
+  tablet$: Observable<boolean>         /* Media tablet observable */
 }
 
 /* ----------------------------------------------------------------------------
@@ -71,16 +69,21 @@ export function patchScrolllock(
       map(([active, tablet]) => active && !tablet),
       switchMap(active => of(active)
         .pipe(
-          delay(active ? 400 : 100),
-          observeOn(animationFrameScheduler)
+          delay(active ? 400 : 100)
         )
       ),
       withLatestFrom(viewport$)
     )
       .subscribe(([active, { offset: { y }}]) => {
-        if (active)
-          setScrollLock(document.body, y)
-        else
-          resetScrollLock(document.body)
+        if (active) {
+          document.body.setAttribute("data-md-state", "lock")
+          document.body.style.top = `-${y}px`
+        } else {
+          const value = -1 * parseInt(document.body.style.top, 10)
+          document.body.removeAttribute("data-md-state")
+          document.body.style.top = ""
+          if (value)
+            window.scrollTo(0, value)
+        }
       })
 }

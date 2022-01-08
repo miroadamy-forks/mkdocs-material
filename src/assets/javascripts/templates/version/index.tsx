@@ -20,7 +20,7 @@
  * IN THE SOFTWARE.
  */
 
-import { configuration } from "~/_"
+import { configuration, translation } from "~/_"
 import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ function renderVersion(version: Version): HTMLElement {
   const config = configuration()
 
   /* Ensure trailing slash, see https://bit.ly/3rL5u3f */
-  const url = new URL(`${version.version}/`, config.base)
+  const url = new URL(`../${version.version}/`, config.base)
   return (
     <li class="md-version__item">
       <a href={url.toString()} class="md-version__link">
@@ -69,23 +69,19 @@ function renderVersion(version: Version): HTMLElement {
  * Render a version selector
  *
  * @param versions - Versions
+ * @param active - Active version
  *
  * @returns Element
  */
-export function renderVersionSelector(versions: Version[]): HTMLElement {
-  const config = configuration()
-
-  /* Determine active version */
-  const [, current] = config.base.match(/([^/]+)\/?$/)!
-  const active =
-    versions.find(({ version, aliases }) => (
-      version === current || aliases.includes(current)
-    )) || versions[0]
-
-  /* Render version selector */
+export function renderVersionSelector(
+  versions: Version[], active: Version
+): HTMLElement {
   return (
     <div class="md-version">
-      <button class="md-version__current">
+      <button
+        class="md-version__current"
+        aria-label={translation("select.version.title")}
+      >
         {active.title}
       </button>
       <ul class="md-version__list">

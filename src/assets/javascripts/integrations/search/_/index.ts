@@ -29,6 +29,7 @@ import {
   SearchHighlightFactoryFn,
   setupSearchHighlighter
 } from "../highlighter"
+import { SearchOptions } from "../options"
 import {
   SearchQueryTerms,
   getSearchQueryTerms,
@@ -59,21 +60,6 @@ export interface SearchIndexDocument {
 /* ------------------------------------------------------------------------- */
 
 /**
- * Search index pipeline function
- */
-export type SearchIndexPipelineFn =
-  | "trimmer"                          /* Trimmer */
-  | "stopWordFilter"                   /* Stop word filter */
-  | "stemmer"                          /* Stemmer */
-
-/**
- * Search index pipeline
- */
-export type SearchIndexPipeline = SearchIndexPipelineFn[]
-
-/* ------------------------------------------------------------------------- */
-
-/**
  * Search index
  *
  * This interfaces describes the format of the `search_index.json` file which
@@ -82,8 +68,7 @@ export type SearchIndexPipeline = SearchIndexPipelineFn[]
 export interface SearchIndex {
   config: SearchIndexConfig            /* Search index configuration */
   docs: SearchIndexDocument[]          /* Search index documents */
-  index?: object                       /* Prebuilt index */
-  pipeline?: SearchIndexPipeline       /* Search index pipeline */
+  options: SearchOptions               /* Search options */
 }
 
 /* ------------------------------------------------------------------------- */
@@ -99,9 +84,24 @@ export interface SearchMetadata {
 /* ------------------------------------------------------------------------- */
 
 /**
+ * Search result document
+ */
+export type SearchResultDocument = SearchDocument & SearchMetadata
+
+/**
+ * Search result item
+ */
+export type SearchResultItem = SearchResultDocument[]
+
+/* ------------------------------------------------------------------------- */
+
+/**
  * Search result
  */
-export type SearchResult = Array<SearchDocument & SearchMetadata>
+export interface SearchResult {
+  items: SearchResultItem[]            /* Search result items */
+  suggestions?: string[]               /* Search suggestions */
+}
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -152,57 +152,61 @@ export class Search {
   protected index: lunr.Index
 
   /**
+   * Search options
+   */
+  protected options: SearchOptions
+
+  /**
    * Create the search integration
    *
    * @param data - Search index
    */
-  public constructor({ config, docs, pipeline, index }: SearchIndex) {
+  public constructor({ config, docs, options }: SearchIndex) {
+    this.options = options
+
+    /* Set up document map and highlighter factory */
     this.documents = setupSearchDocumentMap(docs)
-    this.highlight = setupSearchHighlighter(config)
+    this.highlight = setupSearchHighlighter(config, false)
 
     /* Set separator for tokenizer */
     lunr.tokenizer.separator = new RegExp(config.separator)
 
-    /* If no index was given, create it */
-    if (typeof index === "undefined") {
-      this.index = lunr(function () {
+    /* Create search index */
+    this.index = lunr(function () {
 
-        /* Set up multi-language support */
-        if (config.lang.length === 1 && config.lang[0] !== "en") {
-          this.use((lunr as any)[config.lang[0]])
-        } else if (config.lang.length > 1) {
-          this.use((lunr as any).multiLanguage(...config.lang))
+      /* Set up multi-language support */
+      if (config.lang.length === 1 && config.lang[0] !== "en") {
+        this.use((lunr as any)[config.lang[0]])
+      } else if (config.lang.length > 1) {
+        this.use((lunr as any).multiLanguage(...config.lang))
+      }
+
+      /* Compute functions to be removed from the pipeline */
+      const fns = difference([
+        "trimmer", "stopWordFilter", "stemmer"
+      ], options.pipeline)
+
+      /* Remove functions from the pipeline for registered languages */
+      for (const lang of config.lang.map(language => (
+        language === "en" ? lunr : (lunr as any)[language]
+      ))) {
+        for (const fn of fns) {
+          this.pipeline.remove(lang[fn])
+          this.searchPipeline.remove(lang[fn])
         }
+      }
 
-        /* Compute functions to be removed from the pipeline */
-        const fns = difference([
-          "trimmer", "stopWordFilter", "stemmer"
-        ], pipeline!)
+      /* Set up reference */
+      this.ref("location")
 
-        /* Remove functions from the pipeline for registered languages */
-        for (const lang of config.lang.map(language => (
-          language === "en" ? lunr : (lunr as any)[language]
-        ))) {
-          for (const fn of fns) {
-            this.pipeline.remove(lang[fn])
-            this.searchPipeline.remove(lang[fn])
-          }
-        }
+      /* Set up fields */
+      this.field("title", { boost: 1e3 })
+      this.field("text")
 
-        /* Set up fields and reference */
-        this.field("title", { boost: 1000 })
-        this.field("text")
-        this.ref("location")
-
-        /* Index documents */
-        for (const doc of docs)
-          this.add(doc)
-      })
-
-    /* Handle prebuilt index */
-    } else {
-      this.index = lunr.Index.load(index)
-    }
+      /* Index documents */
+      for (const doc of docs)
+        this.add(doc)
+    })
   }
 
   /**
@@ -221,7 +225,7 @@ export class Search {
    *
    * @returns Search results
    */
-  public search(query: string): SearchResult[] {
+  public search(query: string): SearchResult {
     if (query) {
       try {
         const highlight = this.highlight(query)
@@ -236,7 +240,7 @@ export class Search {
         const groups = this.index.search(`${query}*`)
 
           /* Apply post-query boosts based on title and search query terms */
-          .reduce<SearchResult>((results, { ref, score, matchData }) => {
+          .reduce<SearchResultItem>((item, { ref, score, matchData }) => {
             const document = this.documents.get(ref)
             if (typeof document !== "undefined") {
               const { location, title, text, parent } = document
@@ -249,34 +253,55 @@ export class Search {
 
               /* Highlight title and text and apply post-query boosts */
               const boost = +!parent + +Object.values(terms).every(t => t)
-              results.push({
+              item.push({
                 location,
                 title: highlight(title),
-                text: highlight(text),
+                text:  highlight(text),
                 score: score * (1 + boost),
                 terms
               })
             }
-            return results
+            return item
           }, [])
 
           /* Sort search results again after applying boosts */
           .sort((a, b) => b.score - a.score)
 
           /* Group search results by page */
-          .reduce((results, result) => {
+          .reduce((items, result) => {
             const document = this.documents.get(result.location)
             if (typeof document !== "undefined") {
               const ref = "parent" in document
                 ? document.parent!.location
                 : document.location
-              results.set(ref, [...results.get(ref) || [], result])
+              items.set(ref, [...items.get(ref) || [], result])
             }
-            return results
-          }, new Map<string, SearchResult>())
+            return items
+          }, new Map<string, SearchResultItem>())
 
-        /* Expand grouped search results */
-        return [...groups.values()]
+        /* Generate search suggestions, if desired */
+        let suggestions: string[] | undefined
+        if (this.options.suggestions) {
+          const titles = this.index.query(builder => {
+            for (const clause of clauses)
+              builder.term(clause.term, {
+                fields: ["title"],
+                presence: lunr.Query.presence.REQUIRED,
+                wildcard: lunr.Query.wildcard.TRAILING
+              })
+          })
+
+          /* Retrieve suggestions for best match */
+          suggestions = titles.length
+            ? Object.keys(titles[0].matchData.metadata)
+            : []
+        }
+
+        /* Return items and suggestions */
+        return {
+          items: [...groups.values()],
+          ...typeof suggestions !== "undefined" && { suggestions }
+        }
 
       /* Log errors to console (for now) */
       } catch {
@@ -285,6 +310,6 @@ export class Search {
     }
 
     /* Return nothing in case of error or empty query */
-    return []
+    return { items: [] }
   }
 }

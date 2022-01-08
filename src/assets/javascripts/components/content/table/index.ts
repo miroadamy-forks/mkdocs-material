@@ -22,8 +22,8 @@
 
 import { Observable, of } from "rxjs"
 
-import { createElement, replaceElement } from "~/browser"
 import { renderTable } from "~/templates"
+import { h } from "~/utilities"
 
 import { Component } from "../../_"
 
@@ -43,7 +43,7 @@ export interface DataTable {}
 /**
  * Sentinel for replacement
  */
-const sentinel = createElement("table")
+const sentinel = h("table")
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -62,8 +62,8 @@ const sentinel = createElement("table")
 export function mountDataTable(
   el: HTMLElement
 ): Observable<Component<DataTable>> {
-  replaceElement(el, sentinel)
-  replaceElement(sentinel, renderTable(el))
+  el.replaceWith(sentinel)
+  sentinel.replaceWith(renderTable(el))
 
   /* Create and return component */
   return of({ ref: el })

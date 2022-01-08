@@ -25,7 +25,7 @@
 // ----------------------------------------------------------------------------
 
 // Show repository facts
-@keyframes md-source__facts--done {
+@keyframes facts {
   0% {
     height: 0;
   }
@@ -36,7 +36,7 @@
 }
 
 // Show repository fact
-@keyframes md-source__fact--done {
+@keyframes fact {
   0% {
     transform: translateY(100%);
     opacity: 0;
@@ -56,7 +56,7 @@
 // Rules
 // ----------------------------------------------------------------------------
 
-// Icon definitions
+// Repository information variables
 :root {
   --md-source-forks-icon: svg-load("octicons/repo-forked-16.svg");
   --md-source-repositories-icon: svg-load("octicons/repo-16.svg");
@@ -92,27 +92,13 @@
     // Align with margin only (as opposed to normal button alignment)
     svg {
       margin-top: px2rem(12px);
-      margin-left: px2rem(12px);
-
-      // Adjust for right-to-left languages
-      [dir="rtl"] & {
-        margin-right: px2rem(12px);
-        margin-left: initial;
-      }
+      margin-inline-start: px2rem(12px);
     }
 
     // Adjust spacing if icon is present
     + .md-source__repository {
-      margin-left: px2rem(-40px);
-      padding-left: px2rem(40px);
-
-      // Adjust for right-to-left languages
-      [dir="rtl"] & {
-        margin-right: px2rem(-40px);
-        margin-left: initial;
-        padding-right: px2rem(40px);
-        padding-left: initial;
-      }
+      margin-inline-start: px2rem(-40px);
+      padding-inline-start: px2rem(40px);
     }
   }
 
@@ -120,7 +106,7 @@
   &__repository {
     display: inline-block;
     max-width: calc(100% - #{px2rem(24px)});
-    margin-left: px2rem(12px);
+    margin-inline-start: px2rem(12px);
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
@@ -137,7 +123,7 @@
 
     // Show after the data was loaded
     [data-md-state="done"] & {
-      animation: md-source__facts--done 250ms ease-in;
+      animation: facts 250ms ease-in;
     }
   }
 
@@ -147,7 +133,7 @@
 
     // Show after the data was loaded
     [data-md-state="done"] & {
-      animation: md-source__fact--done 400ms ease-out;
+      animation: fact 400ms ease-out;
     }
 
     // Repository fact icon
@@ -155,7 +141,7 @@
       display: inline-block;
       width: px2rem(12px);
       height: px2rem(12px);
-      margin-right: px2rem(2px);
+      margin-inline-end: px2rem(2px);
       vertical-align: text-top;
       background-color: currentColor;
       mask-repeat: no-repeat;
@@ -165,19 +151,7 @@
 
     // Adjust spacing for repository fact icon
     &:nth-child(1n+2)::before {
-      margin-left: px2rem(8px);
-    }
-
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-      margin-right: initial;
-      margin-left: px2rem(2px);
-
-      // Adjust spacing for repository fact icon
-      &:nth-child(1n+2)::before {
-        margin-right: px2rem(8px);
-        margin-left: initial;
-      }
+      margin-inline-start: px2rem(8px);
     }
 
     // Repository fact: version

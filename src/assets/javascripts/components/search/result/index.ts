@@ -23,53 +23,36 @@
 import {
   Observable,
   Subject,
-  animationFrameScheduler,
-  merge,
-  of
-} from "rxjs"
-import {
   bufferCount,
   filter,
   finalize,
   map,
-  observeOn,
-  startWith,
+  merge,
+  of,
+  skipUntil,
   switchMap,
+  take,
   tap,
   withLatestFrom,
   zipWith
-} from "rxjs/operators"
+} from "rxjs"
 
+import { translation } from "~/_"
 import {
-  addToSearchResultList,
-  resetSearchResultList,
-  resetSearchResultMeta,
-  setSearchResultMeta
-} from "~/actions"
-import {
-  getElementOrThrow,
-  watchElementThreshold
+  getElement,
+  watchElementBoundary
 } from "~/browser"
 import {
-  SearchResult as SearchResultData,
+  SearchResult,
   SearchWorker,
+  isSearchReadyMessage,
   isSearchResultMessage
 } from "~/integrations"
-import { renderSearchResult } from "~/templates"
+import { renderSearchResultItem } from "~/templates"
+import { round } from "~/utilities"
 
 import { Component } from "../../_"
 import { SearchQuery } from "../query"
-
-/* ----------------------------------------------------------------------------
- * Types
- * ------------------------------------------------------------------------- */
-
-/**
- * Search result
- */
-export interface SearchResult {
-  data: SearchResultData[]             /* Search result data */
-}
 
 /* ----------------------------------------------------------------------------
  * Helper types
@@ -101,35 +84,62 @@ interface MountOptions {
 export function mountSearchResult(
   el: HTMLElement, { rx$ }: SearchWorker, { query$ }: MountOptions
 ): Observable<Component<SearchResult>> {
-  const internal$ = new Subject<SearchResult>()
-  const boundary$ = watchElementThreshold(el.parentElement!)
+  const push$ = new Subject<SearchResult>()
+  const boundary$ = watchElementBoundary(el.parentElement!)
     .pipe(
       filter(Boolean)
     )
 
-  /* Update search result metadata */
-  const meta = getElementOrThrow(":scope > :first-child", el)
-  internal$
+  /* Retrieve nested components */
+  const meta = getElement(":scope > :first-child", el)
+  const list = getElement(":scope > :last-child", el)
+
+  /* Wait until search is ready */
+  const ready$ = rx$
     .pipe(
-      observeOn(animationFrameScheduler),
-      withLatestFrom(query$)
+      filter(isSearchReadyMessage),
+      take(1)
     )
-      .subscribe(([{ data }, { value }]) => {
-        if (value)
-          setSearchResultMeta(meta, data.length)
-        else
-          resetSearchResultMeta(meta)
+
+  /* Update search result metadata */
+  push$
+    .pipe(
+      withLatestFrom(query$),
+      skipUntil(ready$)
+    )
+      .subscribe(([{ items }, { value }]) => {
+        if (value) {
+          switch (items.length) {
+
+            /* No results */
+            case 0:
+              meta.textContent = translation("search.result.none")
+              break
+
+            /* One result */
+            case 1:
+              meta.textContent = translation("search.result.one")
+              break
+
+            /* Multiple result */
+            default:
+              meta.textContent = translation(
+                "search.result.other",
+                round(items.length)
+              )
+          }
+        } else {
+          meta.textContent = translation("search.result.placeholder")
+        }
       })
 
   /* Update search result list */
-  const list = getElementOrThrow(":scope > :last-child", el)
-  internal$
+  push$
     .pipe(
-      observeOn(animationFrameScheduler),
-      tap(() => resetSearchResultList(list)),
-      switchMap(({ data }) => merge(
-        of(...data.slice(0, 10)),
-        of(...data.slice(10))
+      tap(() => list.innerHTML = ""),
+      switchMap(({ items }) => merge(
+        of(...items.slice(0, 10)),
+        of(...items.slice(10))
           .pipe(
             bufferCount(4),
             zipWith(boundary$),
@@ -137,23 +147,22 @@ export function mountSearchResult(
           )
       ))
     )
-      .subscribe(result => {
-        addToSearchResultList(list, renderSearchResult(result))
-      })
+      .subscribe(result => list.appendChild(
+        renderSearchResultItem(result)
+      ))
 
-  /* Filter search result list */
+  /* Filter search result message */
   const result$ = rx$
     .pipe(
       filter(isSearchResultMessage),
-      map(({ data }) => ({ data })),
-      startWith({ data: [] })
+      map(({ data }) => data)
     )
 
   /* Create and return component */
   return result$
     .pipe(
-      tap(internal$),
-      finalize(() => internal$.complete()),
+      tap(state => push$.next(state)),
+      finalize(() => push$.complete()),
       map(state => ({ ref: el, ...state }))
     )
 }

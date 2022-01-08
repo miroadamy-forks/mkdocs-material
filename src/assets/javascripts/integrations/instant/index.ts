@@ -25,11 +25,6 @@ import {
   NEVER,
   Observable,
   Subject,
-  fromEvent,
-  merge,
-  of
-} from "rxjs"
-import {
   bufferCount,
   catchError,
   concatMap,
@@ -37,29 +32,30 @@ import {
   distinctUntilChanged,
   distinctUntilKeyChanged,
   filter,
+  fromEvent,
   map,
+  merge,
+  of,
   sample,
   share,
   skip,
   skipUntil,
   switchMap
-} from "rxjs/operators"
+} from "rxjs"
 
-import { configuration } from "~/_"
+import { configuration, feature } from "~/_"
 import {
   Viewport,
   ViewportOffset,
-  createElement,
-  getElement,
   getElements,
-  replaceElement,
+  getOptionalElement,
   request,
   requestXML,
   setLocation,
-  setLocationHash,
-  setViewportOffset
+  setLocationHash
 } from "~/browser"
 import { getComponentElement } from "~/components"
+import { h } from "~/utilities"
 
 /* ----------------------------------------------------------------------------
  * Types
@@ -120,7 +116,7 @@ function preprocess(urls: string[]): string[] {
   /* Replace common prefix (i.e. base) with effective base */
   const config = configuration()
   return urls.map(url => (
-    url.replace(root.slice(0, index), `${config.base}/`)
+    url.replace(root.slice(0, index), config.base)
   ))
 }
 
@@ -168,12 +164,12 @@ export function setupInstantLoading(
   }
 
   /* Hack: ensure absolute favicon link to omit 404s when switching */
-  const favicon = getElement<HTMLLinkElement>("link[rel=icon]")
+  const favicon = getOptionalElement<HTMLLinkElement>("link[rel=icon]")
   if (typeof favicon !== "undefined")
     favicon.href = favicon.href
 
   /* Intercept internal navigation */
-  const push$ = requestXML(`${config.base}/sitemap.xml`)
+  const push$ = requestXML(new URL("sitemap.xml", config.base))
     .pipe(
       map(sitemap => preprocess(getElements("loc", sitemap)
         .map(node => node.textContent!)
@@ -186,11 +182,23 @@ export function setupInstantLoading(
             /* Handle HTML and SVG elements */
             if (ev.target instanceof Element) {
               const el = ev.target.closest("a")
-              if (el && !el.target && urls.includes(el.href)) {
-                ev.preventDefault()
-                return of({
-                  url: new URL(el.href)
-                })
+              if (el && !el.target) {
+                const url = new URL(el.href)
+
+                /* Canonicalize URL */
+                url.search = ""
+                url.hash = ""
+
+                /* Check if URL should be intercepted */
+                if (
+                  url.pathname !== location.pathname &&
+                  urls.includes(url.toString())
+                ) {
+                  ev.preventDefault()
+                  return of({
+                    url: new URL(el.href)
+                  })
+                }
               }
             }
             return NEVER
@@ -252,18 +260,6 @@ export function setupInstantLoading(
     )
       .subscribe(document$)
 
-  /* Emit history state change */
-  merge(push$, pop$)
-    .pipe(
-      sample(document$)
-    )
-      .subscribe(({ url, offset }) => {
-        if (url.hash && !offset)
-          setLocationHash(url.hash)
-        else
-          setViewportOffset(offset || { y: 0 })
-      })
-
   /* Replace meta tags and components */
   document$
     .pipe(
@@ -282,16 +278,19 @@ export function setupInstantLoading(
           "[data-md-component=announce]",
           "[data-md-component=container]",
           "[data-md-component=header-topic]",
-          "[data-md-component=logo], .md-logo", // compat
-          "[data-md-component=skip]"
+          "[data-md-component=logo]",
+          "[data-md-component=skip]",
+          ...feature("navigation.tabs.sticky")
+            ? ["[data-md-component=tabs]"]
+            : []
         ]) {
-          const source = getElement(selector)
-          const target = getElement(selector, replacement)
+          const source = getOptionalElement(selector)
+          const target = getOptionalElement(selector, replacement)
           if (
             typeof source !== "undefined" &&
             typeof target !== "undefined"
           ) {
-            replaceElement(source, target)
+            source.replaceWith(target)
           }
         }
       })
@@ -303,11 +302,11 @@ export function setupInstantLoading(
       map(() => getComponentElement("container")),
       switchMap(el => of(...getElements("script", el))),
       concatMap(el => {
-        const script = createElement("script")
+        const script = h("script")
         if (el.src) {
           for (const name of el.getAttributeNames())
             script.setAttribute(name, el.getAttribute(name)!)
-          replaceElement(el, script)
+          el.replaceWith(script)
 
           /* Complete when script is loaded */
           return new Observable(observer => {
@@ -317,12 +316,25 @@ export function setupInstantLoading(
         /* Complete immediately */
         } else {
           script.textContent = el.textContent
-          replaceElement(el, script)
+          el.replaceWith(script)
           return EMPTY
         }
       })
     )
       .subscribe()
+
+  /* Emit history state change */
+  merge(push$, pop$)
+    .pipe(
+      sample(document$)
+    )
+      .subscribe(({ url, offset }) => {
+        if (url.hash && !offset) {
+          setLocationHash(url.hash)
+        } else {
+          window.scrollTo(0, offset?.y || 0)
+        }
+      })
 
   /* Debounce update of viewport offset */
   viewport$
@@ -343,6 +355,6 @@ export function setupInstantLoading(
       map(([, state]) => state)
     )
       .subscribe(({ offset }) => {
-        setViewportOffset(offset || { y: 0 })
+        window.scrollTo(0, offset?.y || 0)
       })
 }

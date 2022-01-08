@@ -20,13 +20,16 @@
  * IN THE SOFTWARE.
  */
 
-import { Observable, from } from "rxjs"
 import {
+  EMPTY,
+  Observable,
+  catchError,
   filter,
+  from,
   map,
   shareReplay,
   switchMap
-} from "rxjs/operators"
+} from "rxjs"
 
 /* ----------------------------------------------------------------------------
  * Functions
@@ -34,6 +37,9 @@ import {
 
 /**
  * Fetch the given URL
+ *
+ * If the request fails (e.g. when dispatched from `file://` locations), the
+ * observable will complete without emitting a value.
  *
  * @param url - Request URL
  * @param options - Options
@@ -46,6 +52,7 @@ export function request(
   return from(fetch(`${url}`, options))
     .pipe(
       filter(res => res.status === 200),
+      catchError(() => EMPTY)
     )
 }
 

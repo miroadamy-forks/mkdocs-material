@@ -15,10 +15,10 @@ configured via `mkdocs.yml`.
 
 ### Social links
 
-[:octicons-file-code-24: Source][1] ·
+[:octicons-tag-24: 1.0.0][social support] ·
 :octicons-milestone-24: Default: _none_
 
-All _social links_ are rendered next to the copyright information as part of the 
+Social links are rendered next to the copyright notice as part of the 
 footer of your project documentation. Add a list of social links in `mkdocs.yml` 
 with:
 
@@ -29,13 +29,14 @@ extra:
       link: https://twitter.com/squidfunk
 ```
 
-For each entry, the following fields are available:
+The following properties must be set for each link:
 
-`icon`{ #icon }
+`icon`{ #social-icon }
 
-:   :octicons-milestone-24: Default: _none_ · :octicons-alert-24: Required –
-    This field must point to a valid icon path referencing [any icon bundled
-    with the theme][2], or the build will not succeed. Some popular choices:
+:   [:octicons-tag-24: 5.0.0][social.icon support] · :octicons-milestone-24:
+    Default: _none_ · :octicons-alert-24: Required – This property must contain
+    a valid path to [any icon bundled with the theme][custom icons], or the
+    build will not succeed. Some popular choices:
 
     * :fontawesome-brands-behance: – `fontawesome/brands/behance`
     * :fontawesome-brands-docker: – `fontawesome/brands/docker`
@@ -48,16 +49,13 @@ For each entry, the following fields are available:
     * :fontawesome-brands-slack: – `fontawesome/brands/slack`
     * :fontawesome-brands-twitter: – `fontawesome/brands/twitter`
 
-  [1]: https://github.com/squidfunk/mkdocs-material/blob/master/src/partials/social.html
-  [2]: https://github.com/squidfunk/mkdocs-material/tree/master/material/.icons
-
-`link`{ #link }
+`link`{ #social-link }
 
 :   :octicons-milestone-24: Default: _none_ · :octicons-alert-24: Required –
-    This field must contain a valid relative or absolute URL including the URI 
+    This property must be set to a relative or absolute URL including the URI 
     scheme. All URI schemes are supported, including `mailto` and `bitcoin`:
 
-    === "Twitter"
+    === ":fontawesome-brands-twitter: Twitter"
 
         ``` yaml
         extra:
@@ -66,7 +64,7 @@ For each entry, the following fields are available:
               link: https://twitter.com/squidfunk
         ```
 
-    === "Email address"
+    === ":octicons-mail-16: Email"
 
         ``` yaml
         extra:
@@ -75,11 +73,12 @@ For each entry, the following fields are available:
               link: mailto:<email-address>
         ```
 
-`name`{ #name }
+`name`{ #social-name }
 
-:   :octicons-milestone-24: Default: _domain name from_ `link`_, if available_ –
-    This field is used as the link's `title` attribute and can be set to a 
-    discernable name to improve accessibility:
+:   [:octicons-tag-24: 5.1.5][social.name support] · :octicons-milestone-24: 
+    Default: _domain name from_ `link`_, if available_ – This property is used
+    as the link's `title` attribute and can be set to a discernable name to
+    improve accessibility:
 
     ``` yaml
     extra:
@@ -89,27 +88,33 @@ For each entry, the following fields are available:
           name: squidfunk on Twitter
     ```
 
+  [social support]: https://github.com/squidfunk/mkdocs-material/releases/tag/1.0.0
+  [social.icon support]: https://github.com/squidfunk/mkdocs-material/releases/tag/5.0.0
+  [social.name support]: https://github.com/squidfunk/mkdocs-material/releases/tag/5.1.5
+  [custom icons]: https://github.com/squidfunk/mkdocs-material/tree/master/material/.icons
+
 ### Copyright notice
 
-[:octicons-file-code-24: Source][3] · 
+[:octicons-tag-24: 0.1.0][Copyright notice support] ·
 :octicons-milestone-24: Default: _none_
 
-A custom _copyright banner_ can be rendered as part of the footer, which is
+A custom copyright banner can be rendered as part of the footer, which is
 displayed next to the social links. It can be defined as part of `mkdocs.yml`:
 
 ``` yaml
 copyright: Copyright &copy; 2016 - 2020 Martin Donath
 ```
 
+  [Copyright notice support]: https://github.com/squidfunk/mkdocs-material/releases/tag/0.1.0
   [3]: https://github.com/squidfunk/mkdocs-material/blob/master/src/partials/footer.html
 
-### Remove generator
+### Generator notice
 
-[:octicons-file-code-24: Source][4] ·
-[:octicons-heart-fill-24:{ .mdx-heart } Insiders only][4]{ .mdx-insiders }
+[:octicons-tag-24: 7.3.0][Generator notice support] ·
+:octicons-milestone-24: Default: `true`
 
 The footer displays a _Made with Material for MkDocs_ notice to denote how
-the site was generated. The notice can be removed with the following setting
+the site was generated. The notice can be removed with the following option
 via `mkdocs.yml`:
 
 ``` yaml
@@ -117,18 +122,43 @@ extra:
   generator: false
 ```
 
-  [4]: ../insiders/index.md
+!!! info "Please read this before removing the generator notice"
+
+    The subtle __Made with Material for MkDocs__ hint in the footer is one of
+    the reasons why this project is so popular, as it tells the user how the
+    site is generated, helping new users to discover this project. Before
+    removing please consider that you're enjoying the benefits of @squidfunk's
+    work for free, as this project is Open Source and has a permissive license.
+    Thousands of hours went into this project, most of them
+    without any financial return.
+
+    Thus, if you remove this notice, please consider [sponsoring][Insiders] the
+    project. __Thank you__ :octicons-heart-fill-24:{ .mdx-heart .mdx-insiders }
+
+  [Generator notice support]: https://github.com/squidfunk/mkdocs-material/releases/tag/7.3.0
+  [Insiders]: ../insiders/index.md
 
 ## Customization
 
-### Custom icons
+### Custom copyright
 
-[:octicons-file-code-24: Source][2] ·
-:octicons-mortar-board-24: Difficulty: _easy_
+[:octicons-tag-24: 8.0.0][Custom copyright support] ·
+:octicons-file-symlink-file-24: Customization
 
-The social links feature uses the standard [icon integration][5] of Material for
-MkDocs. If you want to use custom icons, follow the guide explaining how to
-add [additional icons][6].
+In order to customize and override the [copyright notice], [extend the theme]
+and [override the `copyright` block][overriding blocks], which is normally set
+to the `copyright` property set in `mkdocs.yml`:
 
-  [5]: changing-the-logo-and-icons.md#icons
-  [6]: changing-the-logo-and-icons.md#additional-icons
+``` html
+{% extends "base.html" %}
+
+{% block copyright %}
+  <!-- Add copyright here, including arbitrary HTML -->
+{% endblock %}
+```
+
+  [Custom copyright support]: https://github.com/squidfunk/mkdocs-material/releases/tag/8.0.0
+  [copyright notice]: #copyright-notice
+  [generator notice]: #generator-notice
+  [extend the theme]: ../customization.md#extending-the-theme
+  [overriding blocks]: ../customization.md#overriding-blocks

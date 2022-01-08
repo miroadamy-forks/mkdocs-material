@@ -28,6 +28,16 @@
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  // Font with fallback for body copy
+  --md-text-font-family:
+    var(--md-text-font, _),
+    -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+
+  // Font with fallback for code
+  --md-code-font-family:
+    var(--md-code-font, _),
+    SFMono-Regular, Consolas, Menlo, monospace;
 }
 
 // Define default fonts
@@ -35,9 +45,7 @@ body,
 input {
   color: var(--md-typeset-color);
   font-feature-settings: "kern", "liga";
-  font-family:
-    var(--md-text-font-family, _),
-    -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+  font-family: var(--md-text-font-family);
 }
 
 // Define monospaced fonts
@@ -46,19 +54,18 @@ pre,
 kbd {
   color: var(--md-typeset-color);
   font-feature-settings: "kern";
-  font-family:
-    var(--md-code-font-family, _),
-    SFMono-Regular, Consolas, Menlo, monospace;
+  font-family: var(--md-code-font-family);
 }
 
 // ----------------------------------------------------------------------------
 // Rules: typesetted content
 // ----------------------------------------------------------------------------
 
-// Icon definitions
+// General variables
 :root {
-  --md-typeset-table--ascending: svg-load("material/arrow-down.svg");
-  --md-typeset-table--descending: svg-load("material/arrow-up.svg");
+  --md-typeset-table-sort-icon: svg-load("material/sort.svg");
+  --md-typeset-table-sort-icon--asc: svg-load("material/sort-ascending.svg");
+  --md-typeset-table-sort-icon--desc: svg-load("material/sort-descending.svg");
 }
 
 // ----------------------------------------------------------------------------
@@ -77,12 +84,7 @@ kbd {
   }
 
   // Default spacing
-  ul,
-  ol,
-  dl,
-  figure,
-  blockquote,
-  pre {
+  :is(ul, ol, dl, figure, blockquote, pre) {
     margin: 1em 0;
   }
 
@@ -127,8 +129,7 @@ kbd {
   }
 
   // Headline on level 5-6
-  h5,
-  h6 {
+  :is(h5, h6) {
     margin: px2em(16px, 12.8px) 0;
     color: var(--md-default-fg-color--light);
     font-weight: 700;
@@ -160,12 +161,11 @@ kbd {
     }
 
     // Text link on focus/hover
-    &:focus,
-    &:hover {
+    &:is(:focus, :hover) {
       color: var(--md-accent-fg-color);
     }
 
-    // Text link on keyboard focus
+    // Show outline for keyboard devices
     &.focus-visible {
       outline-color: var(--md-accent-fg-color);
       outline-offset: px2rem(4px);
@@ -173,9 +173,7 @@ kbd {
   }
 
   // Code block
-  code,
-  pre,
-  kbd {
+  :is(code, pre, kbd) {
     color: var(--md-code-fg-color);
     direction: ltr;
 
@@ -202,12 +200,7 @@ kbd {
   }
 
   // Code block in headline
-  h1 code,
-  h2 code,
-  h3 code,
-  h4 code,
-  h5 code,
-  h6 code {
+  :is(h1, h2, h3, h4, h5, h6) code {
     margin: initial;
     padding: initial;
     background-color: transparent;
@@ -232,6 +225,7 @@ kbd {
       padding: px2em(10.5px, 13.6px) px2em(16px, 13.6px);
       overflow: auto;
       word-break: normal;
+      outline-color: var(--md-accent-fg-color);
       box-shadow: none;
       box-decoration-break: slice;
       touch-action: auto;
@@ -257,20 +251,6 @@ kbd {
         &:hover {
           background-color: var(--md-accent-fg-color);
         }
-      }
-    }
-  }
-
-  // [mobile -]: Align with body copy
-  @include break-to-device(mobile) {
-
-    // Unformatted text
-    > pre {
-      margin: 1em px2rem(-16px);
-
-      // Code block
-      code {
-        border-radius: 0;
       }
     }
   }
@@ -310,12 +290,9 @@ kbd {
       position: relative;
 
       // Tooltip
-      &[title]:focus::after,
-      &[title]:hover::after {
-        @include z-depth(2);
-
+      &[title]:is(:focus, :hover)::after {
         position: absolute;
-        left: 0;
+        inset-inline-start: 0;
         display: inline-block;
         width: auto;
         min-width: max-content;
@@ -326,6 +303,7 @@ kbd {
         font-size: px2rem(14px);
         background-color: var(--md-default-fg-color);
         border-radius: px2rem(2px);
+        box-shadow: var(--md-shadow-z3);
         content: attr(title);
       }
     }
@@ -337,31 +315,15 @@ kbd {
   }
 
   // Superscript and subscript
-  sup,
-  sub {
-    margin-left: px2em(1px, 12.8px);
-
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-      margin-right: px2em(1px, 12.8px);
-      margin-left: initial;
-    }
+  :is(sup, sub) {
+    margin-inline-start: px2em(1px, 12.8px);
   }
 
   // Blockquotes, possibly nested
   blockquote {
-    display: flow-root;
-    padding-left: px2rem(12px);
+    padding-inline-start: px2rem(12px);
     color: var(--md-default-fg-color--light);
-    border-left: px2rem(4px) solid var(--md-default-fg-color--lighter);
-
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-      padding-right: px2rem(12px);
-      padding-left: initial;
-      border-right: px2rem(4px) solid var(--md-default-fg-color--lighter);
-      border-left: initial;
-    }
+    border-inline-start: px2rem(4px) solid var(--md-default-fg-color--lighter);
   }
 
   // Unordered list
@@ -370,16 +332,13 @@ kbd {
   }
 
   // Unordered and ordered list
-  ul,
-  ol {
-    display: flow-root;
-    margin-left: px2em(10px);
+  :is(ul, ol) {
+    margin-inline-start: px2em(10px);
     padding: 0;
 
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-      margin-right: px2em(10px);
-      margin-left: initial;
+    // Adjust display mode if not hidden
+    &:not([hidden]) {
+      display: flow-root;
     }
 
     // Nested ordered list
@@ -395,17 +354,10 @@ kbd {
     // List element
     li {
       margin-bottom: 0.5em;
-      margin-left: px2em(20px);
-
-      // Adjust for right-to-left languages
-      [dir="rtl"] & {
-        margin-right: px2em(20px);
-        margin-left: initial;
-      }
+      margin-inline-start: px2em(20px);
 
       // Adjust spacing
-      p,
-      blockquote {
+      :is(p, blockquote) {
         margin: 0.5em 0;
       }
 
@@ -415,33 +367,21 @@ kbd {
       }
 
       // Nested list
-      ul,
-      ol {
-        margin: 0.5em 0 0.5em px2em(10px);
-
-        // Adjust for right-to-left languages
-        [dir="rtl"] & {
-          margin-right: px2em(10px);
-          margin-left: initial;
-        }
+      :is(ul, ol) {
+        margin-block: 0.5em;
+        margin-inline-start: px2em(10px);
       }
     }
   }
 
   // Definition list
   dd {
-    margin: 1em 0 1.5em px2em(30px);
-
-    // Adjust for right-to-left languages
-    [dir="rtl"] & {
-      margin-right: px2em(30px);
-      margin-left: initial;
-    }
+    margin-block: 1em 1.5em;
+    margin-inline-start: px2em(30px);
   }
 
   // Image or icon
-  img,
-  svg {
+  :is(img, svg) {
     max-width: 100%;
     height: auto;
 
@@ -461,6 +401,11 @@ kbd {
     &[align]:only-child {
       margin-top: 0;
     }
+  }
+
+  // Hide images for dark mode
+  img[src$="#only-dark"] {
+    display: none;
   }
 
   // Figure
@@ -496,10 +441,8 @@ kbd {
     overflow: auto;
     font-size: px2rem(12.8px);
     background-color: var(--md-default-bg-color);
+    border: px2rem(1px) solid var(--md-typeset-table-color);
     border-radius: px2rem(2px);
-    box-shadow:
-      0 px2rem(4px) px2rem(10px) hsla(0, 0%, 0%, 0.05),
-      0 0           px2rem(1px)  hsla(0, 0%, 0%, 0.1);
     touch-action: auto;
 
     // [print]: Reset display mode so table header wraps when printing
@@ -515,8 +458,7 @@ kbd {
     }
 
     // Elements in table heading and cell
-    th > *,
-    td > * {
+    :is(th, td) > * {
 
       // Adjust spacing on first child
       &:first-child {
@@ -530,8 +472,7 @@ kbd {
     }
 
     // Table heading and cell
-    th:not([align]),
-    td:not([align]) {
+    :is(th, td):not([align]) {
       text-align: left;
 
       // Adjust for right-to-left languages
@@ -544,9 +485,8 @@ kbd {
     th {
       min-width: px2rem(100px);
       padding: px2em(12px, 12.8px) px2em(16px, 12.8px);
-      color: var(--md-default-bg-color);
+      font-weight: 700;
       vertical-align: top;
-      background-color: var(--md-default-fg-color--light);
 
       // Links in table headings
       a {
@@ -558,22 +498,17 @@ kbd {
     td {
       padding: px2em(12px, 12.8px) px2em(16px, 12.8px);
       vertical-align: top;
-      border-top: px2rem(1px) solid var(--md-default-fg-color--lightest);
+      border-top: px2rem(1px) solid var(--md-typeset-table-color);
     }
 
-    // Table row
-    tr {
+    // Table body row
+    tbody tr {
       transition: background-color 125ms;
 
       // Table row on hover
       &:hover {
         background-color: rgba(0, 0, 0, 0.035);
         box-shadow: 0 px2rem(1px) 0 var(--md-default-bg-color) inset;
-      }
-
-      // Hide border on first table row
-      &:first-child td {
-        border-top: 0;
       }
     }
 
@@ -592,23 +527,30 @@ kbd {
       display: inline-block;
       width: 1.2em;
       height: 1.2em;
-      margin-left: 0.5em;
-      vertical-align: sub;
+      margin-inline-start: 0.5em;
+      vertical-align: text-bottom;
+      mask-image: var(--md-typeset-table-sort-icon);
       mask-repeat: no-repeat;
       mask-size: contain;
+      transition: background-color 125ms;
       content: "";
     }
 
-    // Sort ascending
-    &[aria-sort="ascending"]::after {
-      background-color: currentColor;
-      mask-image: var(--md-typeset-table--ascending);
+    // Show sort icon on hover
+    &:hover::after {
+      background-color: var(--md-default-fg-color--lighter);
     }
 
-    // Sort descending
+    // Sort ascending icon
+    &[aria-sort="ascending"]::after {
+      background-color: var(--md-default-fg-color--light);
+      mask-image: var(--md-typeset-table-sort-icon--asc);
+    }
+
+    // Sort descending icon
     &[aria-sort="descending"]::after {
-      background-color: currentColor;
-      mask-image: var(--md-typeset-table--descending);
+      background-color: var(--md-default-fg-color--light);
+      mask-image: var(--md-typeset-table-sort-icon--desc);
     }
   }
 
@@ -636,6 +578,24 @@ kbd {
       width: 100%;
       margin: 0;
       overflow: hidden;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Rules: top-level
+// ----------------------------------------------------------------------------
+
+// [mobile -]: Align with body copy
+@include break-to-device(mobile) {
+
+  // Top-level unformatted content
+  .md-content__inner > pre {
+    margin: 1em px2rem(-16px);
+
+    // Code block
+    code {
+      border-radius: 0;
     }
   }
 }

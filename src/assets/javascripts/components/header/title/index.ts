@@ -21,27 +21,20 @@
  */
 
 import {
-  NEVER,
+  EMPTY,
   Observable,
   Subject,
-  animationFrameScheduler
-} from "rxjs"
-import {
+  defer,
   distinctUntilKeyChanged,
   finalize,
   map,
-  observeOn,
   tap
-} from "rxjs/operators"
+} from "rxjs"
 
 import {
-  resetHeaderTitleState,
-  setHeaderTitleState
-} from "~/actions"
-import {
   Viewport,
-  getElement,
   getElementSize,
+  getOptionalElement,
   watchViewportAt
 } from "~/browser"
 
@@ -56,7 +49,7 @@ import { Header } from "../_"
  * Header
  */
 export interface HeaderTitle {
-  active: boolean                      /* User scrolled past first headline */
+  active: boolean                      /* Header title is active */
 }
 
 /* ----------------------------------------------------------------------------
@@ -92,9 +85,9 @@ interface MountOptions {
  * @returns Header title observable
  */
 export function watchHeaderTitle(
-  el: HTMLHeadingElement, { viewport$, header$ }: WatchOptions
+  el: HTMLElement, { viewport$, header$ }: WatchOptions
 ): Observable<HeaderTitle> {
-  return watchViewportAt(el, { header$, viewport$ })
+  return watchViewportAt(el, { viewport$, header$ })
     .pipe(
       map(({ offset: { y } }) => {
         const { height } = getElementSize(el)
@@ -120,28 +113,26 @@ export function watchHeaderTitle(
 export function mountHeaderTitle(
   el: HTMLElement, options: MountOptions
 ): Observable<Component<HeaderTitle>> {
-  const internal$ = new Subject<HeaderTitle>()
-  internal$
-    .pipe(
-      observeOn(animationFrameScheduler)
-    )
-      .subscribe(({ active }) => {
-        if (active)
-          setHeaderTitleState(el, "active")
-        else
-          resetHeaderTitleState(el)
-      })
+  return defer(() => {
+    const push$ = new Subject<HeaderTitle>()
+    push$.subscribe(({ active }) => {
+      if (active)
+        el.setAttribute("data-md-state", "active")
+      else
+        el.removeAttribute("data-md-state")
+    })
 
-  /* Obtain headline, if any */
-  const headline = getElement<HTMLHeadingElement>("article h1")
-  if (typeof headline === "undefined")
-    return NEVER
+    /* Obtain headline, if any */
+    const heading = getOptionalElement("article h1")
+    if (typeof heading === "undefined")
+      return EMPTY
 
-  /* Create and return component */
-  return watchHeaderTitle(headline, options)
-    .pipe(
-      tap(internal$),
-      finalize(() => internal$.complete()),
-      map(state => ({ ref: el, ...state }))
-    )
+    /* Create and return component */
+    return watchHeaderTitle(heading, options)
+      .pipe(
+        tap(state => push$.next(state)),
+        finalize(() => push$.complete()),
+        map(state => ({ ref: el, ...state }))
+      )
+  })
 }

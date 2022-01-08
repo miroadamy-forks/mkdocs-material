@@ -20,14 +20,14 @@
  * IN THE SOFTWARE.
  */
 
-import { getElementOrThrow, getElements } from "~/browser"
+import { getElement, getElements } from "~/browser"
 
 /* ----------------------------------------------------------------------------
  * Types
  * ------------------------------------------------------------------------- */
 
 /**
- * Component
+ * Component type
  */
 export type ComponentType =
   | "announce"                         /* Announcement bar */
@@ -38,10 +38,13 @@ export type ComponentType =
   | "header-title"                     /* Header title */
   | "header-topic"                     /* Header topic */
   | "main"                             /* Main area */
+  | "outdated"                         /* Version warning */
   | "palette"                          /* Color palette */
   | "search"                           /* Search */
   | "search-query"                     /* Search input */
   | "search-result"                    /* Search results */
+  | "search-share"                     /* Search sharing */
+  | "search-suggest"                   /* Search suggestions */
   | "sidebar"                          /* Sidebar */
   | "skip"                             /* Skip link */
   | "source"                           /* Repository information */
@@ -50,7 +53,7 @@ export type ComponentType =
   | "top"                              /* Back-to-top button */
 
 /**
- * A component
+ * Component
  *
  * @template T - Component type
  * @template U - Reference type
@@ -79,10 +82,13 @@ interface ComponentTypeMap {
   "header-title": HTMLElement          /* Header title */
   "header-topic": HTMLElement          /* Header topic */
   "main": HTMLElement                  /* Main area */
+  "outdated": HTMLElement              /* Version warning */
   "palette": HTMLElement               /* Color palette */
   "search": HTMLElement                /* Search */
   "search-query": HTMLInputElement     /* Search input */
   "search-result": HTMLElement         /* Search results */
+  "search-share": HTMLAnchorElement    /* Search sharing */
+  "search-suggest": HTMLElement        /* Search suggestions */
   "sidebar": HTMLElement               /* Sidebar */
   "skip": HTMLAnchorElement            /* Skip link */
   "source": HTMLAnchorElement          /* Repository information */
@@ -108,7 +114,7 @@ interface ComponentTypeMap {
 export function getComponentElement<T extends ComponentType>(
   type: T, node: ParentNode = document
 ): ComponentTypeMap[T] {
-  return getElementOrThrow(`[data-md-component=${type}]`, node)
+  return getElement(`[data-md-component=${type}]`, node)
 }
 
 /**
